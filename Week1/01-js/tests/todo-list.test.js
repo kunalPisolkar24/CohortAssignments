@@ -6,7 +6,7 @@ describe('Todo', () => {
 	beforeEach(() => {
 		todoList = new Todo();
 	});
-
+	
 	test('add and getAll', () => {
 		todoList.add('Task 1');
 		todoList.add('Task 2');
