@@ -4,6 +4,7 @@ function countUp() {
     let currentCount = 0;
 
     function incrementCount() {
+        console.clear();
         if (currentCount === maxCount) {
             clearTimeout(timer);
             return;
