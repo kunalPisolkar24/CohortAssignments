@@ -1,18 +1,4 @@
 
-// Counter problem
-
-function solve1() {
-    let i = 30;
-
-    let counter = setInterval(function () {
-        console.log(i);
-        if (i === 0) {
-            clearInterval(counter);
-        }
-        i--;
-    }, 1000)
-
-}
 
 // Time it takes between a setTimeout and the inner function
 
