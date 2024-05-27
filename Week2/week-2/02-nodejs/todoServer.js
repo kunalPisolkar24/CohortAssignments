@@ -39,11 +39,102 @@
 
   Testing the server - run `npm run test-todoServer` command in terminal
  */
-  const express = require('express');
-  const bodyParser = require('body-parser');
-  
-  const app = express();
-  
-  app.use(bodyParser.json());
-  
-  module.exports = app;
+
+const express = require('express');
+const bodyParser = require('body-parser');
+const fs = require('fs');
+const path = require('path');
+
+const app = express();
+app.use(bodyParser.json());
+
+const filePath = path.join(__dirname, 'todos.json');
+let todos = [];
+let nextId = 1;
+
+// Load todos from file if it exists
+if (fs.existsSync(filePath)) {
+    const data = fs.readFileSync(filePath, 'utf8');
+    todos = JSON.parse(data);
+    if (todos.length > 0) {
+        nextId = Math.max(...todos.map(todo => todo.id)) + 1;
+    }
+}
+
+// Save todos to file
+const saveTodosToFile = () => {
+    fs.writeFileSync(filePath, JSON.stringify(todos, null, 2));
+};
+
+// GET /todos - Retrieve all todo items
+app.get('/todos', (req, res) => {
+    res.status(200).json(todos);
+});
+
+// GET /todos/:id - Retrieve a specific todo item by ID
+app.get('/todos/:id', (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    const todo = todos.find(t => t.id === id);
+    if (todo) {
+        res.status(200).json(todo);
+    } else {
+        res.status(404).send('Todo not found');
+    }
+});
+
+// POST /todos - Create a new todo item
+app.post('/todos', (req, res) => {
+    const { title, description } = req.body;
+    if (!title || !description) {
+        return res.status(400).send('Title and description are required');
+    }
+    const newTodo = { id: nextId++, title, description };
+    todos.push(newTodo);
+    saveTodosToFile();
+    res.status(201).json({ id: newTodo.id });
+});
+
+// PUT /todos/:id - Update an existing todo item by ID
+app.put('/todos/:id', (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    const { title, description } = req.body;
+    const todoIndex = todos.findIndex(t => t.id === id);
+
+    if (todoIndex !== -1) {
+        const updatedTodo = { ...todos[todoIndex], title, description };
+        todos[todoIndex] = updatedTodo;
+        saveTodosToFile();
+        res.status(200).json(updatedTodo);
+    } else {
+        res.status(404).send('Todo not found');
+    }
+});
+
+// DELETE /todos/:id - Delete a todo item by ID
+app.delete('/todos/:id', (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    const todoIndex = todos.findIndex(t => t.id === id);
+
+    if (todoIndex !== -1) {
+        todos.splice(todoIndex, 1);
+        saveTodosToFile();
+        res.status(200).send('Todo deleted');
+    } else {
+        res.status(404).send('Todo not found');
+    }
+});
+
+// Handle undefined routes
+app.use((req, res) => {
+    res.status(404).send('Route not found');
+});
+
+// Only start the server if not in test mode
+if (process.env.NODE_ENV !== 'test') {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
+    });
+}
+
+module.exports = app;
