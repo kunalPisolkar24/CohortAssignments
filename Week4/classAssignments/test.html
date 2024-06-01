@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculation Forms</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Calculation Forms</h1>
+
+        <!-- Sum Form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="card-title">Sum Calculator</h2>
+                <form id="sumForm">
+                    <div class="form-group">
+                        <label for="num1">Number 1</label>
+                        <input type="number" class="form-control" id="num1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="num2">Number 2</label>
+                        <input type="number" class="form-control" id="num2" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Calculate Sum</button>
+                </form>
+                <div id="sumResult" class="alert alert-success mt-3" role="alert" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Interest Form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="card-title">Interest Calculator</h2>
+                <form id="interestForm">
+                    <div class="form-group">
+                        <label for="principal">Principal</label>
+                        <input type="number" class="form-control" id="principal" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="rate">Rate (%)</label>
+                        <input type="number" class="form-control" id="rate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="time">Time (years)</label>
+                        <input type="number" class="form-control" id="time" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Calculate Interest</button>
+                </form>
+                <div id="interestResult" class="alert alert-success mt-3" role="alert" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('sumForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const num1 = document.getElementById('num1').value;
+            const num2 = document.getElementById('num2').value;
+
+            const response = await fetch(`http://localhost:3000/sum?num1=${num1}&num2=${num2}`);
+            const data = await response.json();
+
+            const resultDiv = document.getElementById('sumResult');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = `Sum: ${data.sum}`;
+        });
+
+        document.getElementById('interestForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const principal = document.getElementById('principal').value;
+            const rate = document.getElementById('rate').value;
+            const time = document.getElementById('time').value;
+
+            const response = await fetch(`http://localhost:3000/interest?principal=${principal}&rate=${rate}&time=${time}`);
+            const data = await response.json();
+
+            const resultDiv = document.getElementById('interestResult');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = `Interest: ${data.interest}`;
+        });
+    </script>
+</body>
+</html>
