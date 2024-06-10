@@ -61,6 +61,78 @@ app.post("/login", async (req, res) => {
     }
 });
 
+app.get("/cards", authMiddleware, async (req, res) => {
+    try {
+        const cards = await Card.find();
+        res.json({ cards });
+    }
+    catch(error) {
+        console.error(error);
+        res.status(500).json({message: "Error fetching cards"});
+    }
+});
+
+app.get("/cards/:id", authMiddleware, async (req, res) => {
+    try {
+        const card = await Card.findById(req.params.id);
+        if(!card)
+            return res.status(404).json({message: "Card not found"});
+        res.json({ card });
+    }
+    catch(error){
+        console.error(error);
+        res.status(500).json({message: "Error fetching card"});
+    }
+});
+
+app.post("/cards", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+        const validationResult = cardSchema.parse(req.body);
+
+        const newCard = new Card(validationResult);
+        const savedCard = await newCard.save();
+        res.status(201).json(savedCard);
+    }
+    catch(error) {
+        console.error(error);
+        if(error instanceof z.ZodError) 
+            res.status(400).json({ message: error.issues[0].message });
+        else 
+            res.status(500).json({message: "Error creating card"});
+    }
+});
+
+app.put("/cards/:id", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+        const validationResult = cardSchema.parse(req.body);
+
+        const updatedCard = await Card.findByIdAndUpdate(req.params.id, validationResult, { new: true });
+        if(!updatedCard)
+            return res.status(404).json({message: "Card not found"});
+        res.json(updatedCard);
+    }
+    catch(error) {
+        console.error(error);
+        if(error instanceof z.ZodError) 
+            res.status(400).json({ message: error.issues[0].message });
+        else 
+            res.status(500).json({message: "Error updating card"});
+    }
+});
+
+app.delete("/cards/:id", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+        const deletedCard = await Card.findByIdAndDelete(req.params.id);
+        if(!deletedCard)
+            return res.status(404).json({message: "Card not found"});
+        res.json({ message: "Card deleted successfully" });
+    }
+    catch(error) {
+        console.error(error);
+        res.status(500).json({message: "Error deleting card"});
+    }
+});
+
 connectDB().then(()=> {
     app.listen(port, () => {
         console.log(`Server listening at http://localhost:${port}`);
