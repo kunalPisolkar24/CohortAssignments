@@ -1,10 +1,11 @@
-const mongoose = require("mongoose");
-require("dotenv").config();
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+dotenv.config();
 
-const connectDB = async () => {
+export const connectDB = async () => {
     try {
         const conn = await mongoose.connect(process.env.MONGO_URI);
-        console.log(`MongoDB Commnected: ${conn.connection.host}`);
+        console.log(`MongoDB Connected: ${conn.connection.host}`);
     } catch (error) {
         console.error(`Error: ${error.message}`);
         process.exit(1);
@@ -48,6 +49,5 @@ const UserSchema = new mongoose.Schema({
 });
 
 
-const User = mongoose.model("User", UserSchema);
-const Card = mongoose.model("Card", CardSchema);
-module.exports = {connectDB, User, Card};
+export const User = mongoose.model("User", UserSchema);
+export const Card = mongoose.model("Card", CardSchema);

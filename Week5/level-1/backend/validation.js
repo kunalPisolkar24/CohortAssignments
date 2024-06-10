@@ -1,12 +1,24 @@
-import {z} from "zod";
+import z from "zod";
 
 export const userSignupSchema = z.object({
-  username: z.string().min(3).max(20).regex(/^[a-zA-Z0-9_]+$/, 'Username must be alphanumeric and underscores only'),
+  username: z
+    .string()
+    .min(3)
+    .max(20)
+    .regex(/^[a-zA-Z0-9_]+$/, "Username must be alphanumeric and underscores only"),
   email: z.string().email(),
   password: z.string().min(8),
-  confirmPassword: z.string().min(8).refine((val, ctx) => val === ctx.parent.password, {
-    message: 'Passwords do not match',
-  }),
+  confirmPassword: z.string().min(8),
+});
+
+userSignupSchema.superRefine((val, ctx) => {
+  if (val.password !== val.confirmPassword) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Passwords do not match",
+      path: ["confirmPassword"],
+    });
+  }
 });
 
 export const userLoginSchema = z.object({
