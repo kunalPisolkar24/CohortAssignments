@@ -1,5 +1,5 @@
 import React from "react"
-import Login from "./components/Login/Login"
+import ProtectedRoute from "./components/ProtectedRoute"
 function App() {
 
   return (
