@@ -87,18 +87,31 @@ app.get("/cards/:id", authMiddleware, async (req, res) => {
 
 app.post("/cards", authMiddleware, adminMiddleware, async (req, res) => {
     try {
-        const validationResult = cardSchema.parse(req.body);
+        // 1. Validate incoming data (Zod will handle optional fields)
+        const validationResult = cardSchema.parse(req.body); 
 
-        const newCard = new Card(validationResult);
+        // 2. Create new card data object, handling optional fields
+        const newCardData = {
+            name: validationResult.name,
+            description: validationResult.description,
+            linkedin: validationResult.linkedin,
+            twitter: validationResult.twitter,    
+            interests: validationResult.interests
+        };
+
+        // 3. Create and save the new card
+        const newCard = new Card(newCardData);
         const savedCard = await newCard.save();
-        res.status(201).json(savedCard);
-    }
-    catch(error) {
+
+        res.status(201).json(savedCard); 
+
+    } catch (error) {
         console.error(error);
-        if(error instanceof z.ZodError) 
+        if (error instanceof z.ZodError) {
             res.status(400).json({ message: error.issues[0].message });
-        else 
-            res.status(500).json({message: "Error creating card"});
+        } else { 
+            res.status(500).json({ message: "Error creating card" }); 
+        }
     }
 });
 

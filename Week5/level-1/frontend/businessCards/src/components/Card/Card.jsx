@@ -1,7 +1,7 @@
 import React from "react";
 
-export default function Card({card}) {
-
+export default function Card({ card }) {
+    // console.log(card);
     return (
         <div className="card mb-3">
             <div className="card-body">
@@ -9,9 +9,9 @@ export default function Card({card}) {
                 <p className="card-text">{card.description}</p>
 
                 <ul className="list-group list-group-flush">
-                    {card.interests.map((interests, index) => {
-                        <li key={index} className="list-group-item">{interests}</li>
-                    }) }
+                    {card.interests.map((interest, index) => (
+                        <li key={index} className="list-group-item">{interest}</li>
+                    ))}
                 </ul>
 
                 <div className="mt-3">

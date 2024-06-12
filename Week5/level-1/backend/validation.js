@@ -29,8 +29,11 @@ export const userLoginSchema = z.object({
 export const cardSchema = z.object({
     name: z.string().min(1),
     description: z.string(),
-    linkedin: z.string().url().optional(),
-    twitter: z.string().url().optional(),
+    linkedin: z.string().refine((val) => val === "" || z.string().url().safeParse(val).success, 
+                      { message: "Invalid LinkedIn URL" }).optional(),
+
+  twitter: z.string().refine((val) => val === "" || z.string().url().safeParse(val).success, 
+                      { message: "Invalid Twitter URL" }).optional(),
     interests: z.array(z.string()),
 });
 
