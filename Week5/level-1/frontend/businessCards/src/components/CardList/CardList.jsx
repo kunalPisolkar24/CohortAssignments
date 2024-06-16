@@ -8,7 +8,7 @@ function CardList() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [cardsPerPage, setCardsPerPage] = useState(4);
+  const [cardsPerPage, setCardsPerPage] = useState(6);
 
   const navigate = useNavigate();
 

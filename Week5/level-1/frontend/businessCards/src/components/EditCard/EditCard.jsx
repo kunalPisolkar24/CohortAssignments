@@ -10,41 +10,41 @@ function EditCard() {
     const [description, setDescription] = useState("");
     const [linkedin, setLinkedin] = useState("");
     const [twitter, setTwitter] = useState("");
-    const [interests, setInterests] = useState([]);
+    const [interests, setInterests] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetchCard = async () => {
+            setIsLoading(true); // Start loading
             try {
                 const response = await axios.get(`http://localhost:3000/cards/${id}`, {
                     headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`
-                    }
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
                 });
 
-                const cardData = response.data;
+                const cardData = response.data.card; 
                 setName(cardData.name);
                 setDescription(cardData.description);
                 setLinkedin(cardData.linkedin || "");
                 setTwitter(cardData.twitter || "");
-                setInterests(cardData.interests.join(", "));
-                setIsLoading(false);
-            }
-            catch(error) {
+                setInterests(cardData.interests ? cardData.interests.join(", ") : ""); // Check if interests exist
+            } catch (error) {
                 console.error("Error fetching card: ", error);
                 setErrorMessage("Failed to fetch card.");
-            }finally {
-                setIsLoading(false);
+            } finally {
+                setIsLoading(false); // Stop loading
             }
         };
+
         fetchCard();
     }, [id]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        try{
+        try {
             await axios.put(`http://localhost:3000/cards/${id}`, {
                 name,
                 description,
@@ -61,19 +61,19 @@ function EditCard() {
             setErrorMessage(null);
             navigate("/cards");
         }
-        catch(error){
+        catch (error) {
             console.error("Error updating card: ", error);
-            if(error.response && error.response.data && error.response.data.message) 
+            if (error.response && error.response.data && error.response.data.message)
                 setErrorMessage(error.response.data.message);
             else
                 setErrorMessage("An error occurred while updating the card.");
         }
     };
 
-    if(isLoading) 
+    if (isLoading)
         return <div>Loading...</div>;
 
-    if(errorMessage)
+    if (errorMessage)
         return <div className="alert alert-danger">{errorMessage}</div>;
 
     return (
@@ -91,7 +91,7 @@ function EditCard() {
 
                                 <div className="mb-3">
                                     <label htmlFor="name" className="form-label">Name: </label>
-                                    <input type="text" className="form-control" id="name" value={name} onChange={(e) => setName(e.target.value)} required />                                    
+                                    <input type="text" className="form-control" id="name" value={name} onChange={(e) => setName(e.target.value)} required />
                                 </div>
 
                                 <div className="mb-3">
