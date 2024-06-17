@@ -1,0 +1,48 @@
+/* ParagraphGenerator.css */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+* {
+    font-family: "Poppins", sans-serif;
+}
+
+/* ParagraphGenerator.css */
+.paragraph-generator {
+  width: 600px; /* Increased card size */
+  margin: 20px auto;
+  padding: 30px; /* Increased padding */
+  border: 1px solid #ccc;
+  border-radius: 8px; /* Softer corners */
+}
+
+.paragraph-generator h1 {
+  text-align: center;
+  margin-bottom: 20px; 
+}
+
+.input-group {
+  display: flex;
+  align-items: center; /* Align button to input vertically */
+  margin-bottom: 20px; 
+}
+
+.input-group input[type="number"] {
+  flex: 1; /* Input takes available space */
+  padding: 12px; 
+  border: 1px solid #ccc;
+  border-radius: 5px; 
+  margin-right: 10px; 
+}
+
+.input-group button {
+  padding: 12px 20px; 
+  background-color: #1f2020; /* Example button color */
+  color: white;
+  border: none;
+  border-radius: 5px; 
+  cursor: pointer;
+}
+
+.paragraph-generator p {
+  margin-top: 20px; 
+  line-height: 1.6; 
+}
