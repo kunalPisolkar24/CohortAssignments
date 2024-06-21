@@ -4,13 +4,17 @@ import authRoutes from "./routes/authRoutes.js"
 import userRoutes from "./routes/userRoutes.js"
 import paymentRoutes from "./routes/paymentRoutes.js"
 import dotenv from "dotenv";
+import cors from "cors";
+
 
 dotenv.config();
+
 
 const app  = express();
 const PORT = 3000;
 
 app.use(express.json());
+app.use(cors());
 
 connectDB().then(()=> {
     app.listen(PORT, () => {
