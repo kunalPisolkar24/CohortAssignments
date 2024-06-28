@@ -2,6 +2,21 @@ import React from "react";
 import { CircleUser, Menu, CreditCard, Search, DollarSign } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { useRecoilValue, useSetRecoilState } from "recoil";
+import { userState, usersState} from "@/store/atom";
+import { useEffect } from "react";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {Label } from "@/components/ui/label";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -24,6 +39,77 @@ import {
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 function Dashboard() {
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const navigate = useNavigate();
+
+  const user = useRecoilValue(userState);
+  const setUser = useSetRecoilState(userState);
+
+  const users = useRecoilValue(usersState);
+  const setUsers = useSetRecoilState(usersState);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const token = localStorage.getItem("token");
+      if(token) {
+        try {
+          const response = await fetch("http://localhost:3000/api/auth/me", {
+            headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
+          });
+          if (response.ok) {
+            const userData = await response.json();
+            setUser(userData);
+          }else {
+            console.log("Failed to fetch user data");
+          }
+        }
+        catch(error){
+          console.log("Failed to fetch user data");
+        }
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  useEffect(() => {
+    let timeoutId;
+    const fetchUsers = async () => {
+      if (searchQuery) {
+        const token = localStorage.getItem("token");
+        try {
+          const response = await fetch(`http://localhost:3000/api/users?query=${String(searchQuery)}`, {
+            headers: { "Authorization": `Bearer ${token}` },
+          });
+          if (response.ok) {
+            const users = await response.json();
+            console.log("users", users);
+            setUsers(users);
+          }else {
+            console.log("Failed to fetch user data");
+          }
+        }
+        catch(error) {
+          console.log("Failed to fetch user data", error);
+        }
+      }
+    };
+
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {fetchUsers()}, 500);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+
+  }, [searchQuery]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setUsers(null);;
+    navigate("/login"); 
+  };
+
   return (
     <>
       <div className="flex min-h-screen w-full flex-col">
@@ -100,9 +186,11 @@ function Dashboard() {
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  <Link to={``}>
                   <DropdownMenuItem>My Profile</DropdownMenuItem>
+                  </Link>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>Logout</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -118,76 +206,85 @@ function Dashboard() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">$ 45,231.89</div>
+              <div className="text-2xl font-bold"> 
+                $ {user?.balance ? user.balance : 0}
+              </div>
             </CardContent>
           </Card>
 
-                  <div className="py-8 md:py-[0]">
+          <div className="py-8 md:py-[0]">
           <form className="">
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
                 placeholder="Search users..."
+                value = {searchQuery}
                 className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
+                onChange = {(e) => setSearchQuery(e.target.value)}
               />
             </div>
           </form>
         </div>
         <div className="">
-          <Card x-chunk="dashboard-01-chunk-5">
-            <CardHeader>
-              <CardTitle>Users</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-8">
-              <div className="flex items-center gap-4">
-                <Avatar className="hidden h-9 w-9 sm:flex">
-                  <AvatarImage src="/avatars/01.png" alt="Avatar" />
-                  <AvatarFallback>OM</AvatarFallback>
-                </Avatar>
-                <div className="grid gap-1">
-                  <p className="text-sm font-medium leading-none">
-                    Olivia Martin
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    olivia.martin@email.com
-                  </p>
-                </div>
-                <Button className="ml-auto font-medium" variant="outline">Send Money</Button>
-              </div>
-               <div className="flex items-center gap-4">
-                <Avatar className="hidden h-9 w-9 sm:flex">
-                  <AvatarImage src="/avatars/01.png" alt="Avatar" />
-                  <AvatarFallback>OM</AvatarFallback>
-                </Avatar>
-                <div className="grid gap-1">
-                  <p className="text-sm font-medium leading-none">
-                    Olivia Martin
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    olivia.martin@email.com
-                  </p>
-                </div>
-                <Button className="ml-auto font-medium" variant="outline">Send Money</Button>
-              </div>              <div className="flex items-center gap-4">
-                <Avatar className="hidden h-9 w-9 sm:flex">
-                  <AvatarImage src="/avatars/01.png" alt="Avatar" />
-                  <AvatarFallback>OM</AvatarFallback>
-                </Avatar>
-                <div className="grid gap-1">
-                  <p className="text-sm font-medium leading-none">
-                    Olivia Martin
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    olivia.martin@email.com
-                  </p>
-                </div>
-                <Button className="ml-auto font-medium" variant="outline">Send Money</Button>
-              </div>                     
-            </CardContent>
-          </Card>
         </div>
-      
+        
+      <Card x-chunk="dashboard-01-chunk-5">
+        <CardHeader>
+          <CardTitle>Users</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-8">
+          {users && users.length > 0 ? (
+            users.map((user) => (
+              <div key={user._id} className="flex items-center gap-4">
+                <Avatar className="hidden h-9 w-9 sm:flex">
+                  <AvatarImage src="/avatars/01.png" alt="Avatar" /> 
+                  <AvatarFallback>
+                    {user.username.charAt(0).toUpperCase()} {/* Display first letter as capital */}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="grid gap-1">
+                  <p className="text-sm font-medium leading-none">{user.username}</p>
+                  <p className="text-sm text-muted-foreground">{user.email}</p>
+                </div>
+              <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="ml-auto ">Send Money</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Make Payment </DialogTitle>
+          <DialogDescription>
+            Make payment to {user.username}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="amount" className="text-right">
+              Amount
+            </Label>
+            <Input id="amount" value="0" className="col-span-3" />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="password" className="text-right">
+              Password
+            </Label>
+            <Input id="password" placeholder="Enter your password"  className="col-span-3" />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button type="submit">Save changes</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+              </div>
+            ))
+          ) : (
+            <p>No users found</p>
+          )}
+        </CardContent>
+      </Card>
+
         </main>
       </div>
     </>
