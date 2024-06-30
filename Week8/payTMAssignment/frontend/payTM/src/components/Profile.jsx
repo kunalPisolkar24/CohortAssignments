@@ -48,7 +48,7 @@ export default function Profile() {
 
     return (
         <div className="flex justify-center items-center h-screen bg-background">
-            <Card className="w-full max-w-md p-6 bg-card text-card-foreground">
+            <Card className="w-full max-w-md mt-[-100px] p-6 bg-card text-card-foreground">
                 <div className="flex flex-col items-center gap-4">
                     <Avatar className="w-20 h-20 text-4xl border-2 border-primary">
                         <AvatarImage src="/placeholder-user.jpg" />

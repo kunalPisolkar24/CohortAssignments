@@ -18,17 +18,16 @@ import { userState } from "@/store/atom";
 import { useLocation } from "react-router-dom";
 
 export function Auth() {
-	const [activeTab, setActiveTab] = useState("Login");
-	const location = useLocation();
+  const [activeTab, setActiveTab] = useState("Login");
+  const location = useLocation();
 
-	useEffect(() => {
-		if(location.pathname.includes("/login")) 
-			setActiveTab("Login");
-		else if(location.pathname.includes("/signup"))
-			setActiveTab("Signup");
-
-	}, [location.pathname, activeTab]);
-
+  useEffect(() => {
+    if (location.pathname.includes("/login")) {
+      setActiveTab("Login");
+    } else if (location.pathname.includes("/signup")) {
+      setActiveTab("Signup");
+    }
+  }, [location.pathname]); 
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -51,7 +50,7 @@ export function Auth() {
 
       if (response.ok) {
         console.log("Signup successful");
-        navigate("/login");
+        setActiveTab("Login");
       } else {
         const errorData = await response.json();
         alert(`Signup failed: ${errorData.message}`);
@@ -104,111 +103,115 @@ export function Auth() {
 
   return (
     <div className="flex justify-center mt-40">
-      <Tabs defaultValue={activeTab} className="w-[400px]">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-[400px]">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="Signup">Signup</TabsTrigger>
           <TabsTrigger value="Login">Login</TabsTrigger>
         </TabsList>
         <TabsContent value={activeTab}>
-          <Card>
-            <form onSubmit={handleSignup}>
-              <CardHeader>
-                <CardTitle>Sign Up</CardTitle>
-                <CardDescription>
-                  Create a new account to get started
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="space-y-1">
-                  <Label htmlFor="username">Username</Label>
-                  <Input
-                    id="username"
-                    defaultValue=""
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="peduarte25"
-                    required
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    defaultValue=""
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="peduarte25@example.com"
-                    required
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    defaultValue=""
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter password"
-                    type="password"
-                    required
-                  />
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button className="w-full" type="submit">
-                  Create account
-                </Button>
-              </CardFooter>
-            </form>
-          </Card>
-        </TabsContent>
-        <TabsContent value="Login">
-          <Card>
-            <form onSubmit={handleLogin}>
-              <CardHeader>
-                <CardTitle>Login</CardTitle>
-                <CardDescription>
-                  Enter your credentials to access your account
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="space-y-1">
-                  <Label htmlFor="username">Username</Label>
-                  <Input
-                    id="username"
-                    onChange={(e) => setUsername(e.target.value)}
-                    type=""
-                    placeholder="peduarte25"
-                    required
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    onChange={(e) => setEmail(e.target.value)}
-                    type=""
-                    placeholder="peduarte25@example.com"
-                    required
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    onChange={(e) => setPassword(e.target.value)}
-                    type="password"
-                    placeholder="Enter password"
-                    required
-                  />
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button className="w-full" type="submit">
-                  Login
-                </Button>
-              </CardFooter>
-            </form>
-          </Card>
+          {activeTab === "Signup" && ( 
+            <Card>
+              <form onSubmit={handleSignup}>
+                <CardHeader>
+                  <CardTitle>Sign Up</CardTitle>
+                  <CardDescription>
+                    Create a new account to get started
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="space-y-1">
+                    <Label htmlFor="username">Username</Label>
+                    <Input
+                      id="username"
+                      defaultValue=""
+                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="peduarte25"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      defaultValue=""
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="peduarte25@example.com"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      defaultValue=""
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter password"
+                      type="password"
+                      required
+                    />
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button className="w-full" type="submit">
+                    Create account
+                  </Button>
+                </CardFooter>
+              </form>
+            </Card>
+          )}
+          {activeTab === "Login" && ( 
+            <Card>
+              <form onSubmit={handleLogin}>
+                <CardHeader>
+                  <CardTitle>Login</CardTitle>
+                  <CardDescription>
+                    Enter your credentials to access your account
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="space-y-1">
+                    <Label htmlFor="username">Username</Label>
+                    <Input
+                      id="username"
+                      onChange={(e) => setUsername(e.target.value)}
+                      type=""
+                      placeholder="peduarte25"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      onChange={(e) => setEmail(e.target.value)}
+                      type=""
+                      placeholder="peduarte25@example.com"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      onChange={(e) => setPassword(e.target.value)}
+                      type="password"
+                      placeholder="Enter password"
+                      required
+                    />
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button className="w-full" type="submit">
+                    Login
+                  </Button>
+                </CardFooter>
+              </form>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
     </div>
   );
 }
+
+
