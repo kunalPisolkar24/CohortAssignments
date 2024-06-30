@@ -23,16 +23,27 @@ import { userState } from "@/store/atom";
 
 export default function Payments() {
   const [transactions, setTransactions] = useState([]);
-  const user = useRecoilValue(userState);
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const fetchTransactions = async () => {
+      setIsLoading(true);
       try {
         const token = localStorage.getItem("token");
         if (token) {
           const response = await fetch("http://localhost:3000/api/payments", {
             headers: { Authorization: `Bearer ${token}` },
           });
+
+          const response2 = await fetch("http://localhost:3000/api/auth/me", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          if(response2.ok) {
+            const userData = await response2.json();
+            setUser(userData);
+          }
 
           if (response.ok) {
             const data = await response.json();
@@ -43,14 +54,16 @@ export default function Payments() {
         }
       } catch (error) {
         console.error("Error fetching transactions:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchTransactions();
   }, []);
 
-  if(!transactions || transactions.length === 0) {
-    return <div className="p-8"> Loading Transcations....</div>
+  if (isLoading) {
+    return <div className="p-8">Loading Transactions....</div>;
   }
 
   return (
@@ -85,12 +98,12 @@ export default function Payments() {
                   <TableRow key={transaction._id}>
                     <TableCell>{transaction.status}</TableCell>
                     <TableCell>
-                      {transaction.sender && transaction.sender._id === user._id
+                      {transaction.sender._id === user._id
                         ? "You"
                         : transaction.sender.username}
                     </TableCell>
                     <TableCell>
-                      {transaction.recipient && transaction.recipient._id === user._id
+                      {transaction.recipient._id === user._id
                         ? "You"
                         : transaction.recipient.username}
                     </TableCell>
@@ -108,11 +121,9 @@ export default function Payments() {
                   </TableRow>
                 ))}
               </TableBody>
-              {/* You can add a TableFooter here if needed */}
             </Table>
           </div>
         </CardContent>
-        {/* You can add a CardFooter here if needed */}
       </Card>
     </div>
   );
