@@ -232,7 +232,7 @@ function Dashboard() {
                   PayTM
                 </Link>
                 <Link
-                  href="#"
+                  to={`/payments`}
                   className="text-muted-foreground hover:text-foreground"
                 >
                   Payments
@@ -256,7 +256,7 @@ function Dashboard() {
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <Link to={``}>
+                  <Link to={`/profile`}>
                     <DropdownMenuItem>My Profile</DropdownMenuItem>
                   </Link>
                   <DropdownMenuSeparator />
