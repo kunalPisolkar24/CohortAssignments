@@ -24,8 +24,12 @@ function TodoItem({ todo, toggleComplete, editTodo, deleteTodo }) {
           </>
         ) : ( // Otherwise, show the todo title and description
           <>
-            <span className="me-2">{todo.title}</span>
-            <small className="text-muted">{todo.description}</small>
+            <span className={`me-2 ${todo.completed ? 'text-decoration-line-through' : ''}`}> 
+              {todo.title}
+            </span>
+            <small className={`text-muted ${todo.completed ? 'text-decoration-line-through' : ''}`}> 
+              {todo.description}
+            </small>
           </>
         )}
       </div>
