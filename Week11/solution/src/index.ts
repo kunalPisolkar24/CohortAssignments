@@ -1,12 +1,12 @@
-import { Hono } from 'hono';
-import {userRouter} from "./routes/user";
-import {postRouter} from "./routes/posts";
+import { Hono } from "hono";
+import { userRouter } from "./routes/user";
+import { postRouter } from "./routes/posts";
 
 const app = new Hono<{
-	Bindings: {
-		DATABASE_URL: string,
-    JWT_SECRET: string,
-	}
+  Bindings: {
+    DATABASE_URL: string;
+    JWT_SECRET: string;
+  };
 }>();
 
 app.route("/api/users", userRouter);
