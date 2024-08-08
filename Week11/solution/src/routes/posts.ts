@@ -4,9 +4,9 @@ import { Hono } from "hono";
 
 
 export const postRouter = new Hono<{
-    Bindings: {
-        DATABASE_URL: string;
-    }
+  Bindings: {
+    DATABASE_URL: string;
+  }
 }>();
 
 
@@ -15,9 +15,9 @@ postRouter.get('/', (c) => {
 });
 
 postRouter.get('/:id', (c) => {
-	const id = c.req.param('id')
-	console.log(id);
-	return c.text('get post by id')
+  const id = c.req.param('id')
+  console.log(id);
+  return c.text('get post by id')
 })
 
 postRouter.post("/", (c) => {
@@ -26,9 +26,9 @@ postRouter.post("/", (c) => {
 
 postRouter.put('/:id', (c) => {
 
-	return c.text('PUT, post id')
+  return c.text('PUT, post id')
 })
 
 postRouter.delete('/:id', (c) => {
-	return c.text('delete post by id')
+  return c.text('delete post by id')
 })

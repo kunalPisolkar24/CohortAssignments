@@ -9,7 +9,7 @@ const app = new Hono<{
   };
 }>();
 
-app.route("/api/users", userRouter);
+app.route("/api", userRouter);
 app.route("/api/posts", postRouter);
 
 export default app;

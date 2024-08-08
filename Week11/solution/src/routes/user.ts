@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import { sign } from "hono/jwt";
 
 import { StatusCode } from '../constants/status-code';
+import { authMiddleware } from '../middleware/auth';
 
 export const userRouter = new Hono<{
   Bindings: {
@@ -75,3 +76,44 @@ userRouter.post('/signin', async (c) => {
     await prisma.$disconnect();
   }
 });
+
+userRouter.use('/users', authMiddleware);
+
+userRouter.get('/users/:id', async (c) => {
+  const prisma = new PrismaClient({ datasourceUrl: c.env?.DATABASE_URL }).$extends(withAccelerate());
+  try {
+    const userId = parseInt(c.req.param('id'));
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, username: true },
+    });
+
+    if (!user) {
+      return c.json({ error: 'User not found' }, StatusCode.NOT_FOUND);
+    }
+
+    return c.json(user, StatusCode.OK);
+  } catch (error) {
+    console.error(error);
+    return c.json({ error: 'Failed to get user details' }, StatusCode.INTERNAL_SERVER_ERROR);
+  } finally {
+    await prisma.$disconnect();
+  }
+});
+
+userRouter.get('/users', async (c) => {
+  const prisma = new PrismaClient({ datasourceUrl: c.env?.DATABASE_URL }).$extends(withAccelerate());
+  try {
+    const users = await prisma.user.findMany({
+      select: { id: true, email: true, username: true },
+    });
+
+    return c.json(users, StatusCode.OK);
+  } catch (error) {
+    console.error(error);
+    return c.json({ error: 'Failed to get users' }, StatusCode.INTERNAL_SERVER_ERROR);
+  } finally {
+    await prisma.$disconnect();
+  }
+});
+
