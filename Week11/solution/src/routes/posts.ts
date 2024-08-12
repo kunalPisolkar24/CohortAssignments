@@ -1,7 +1,9 @@
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
-import { Hono } from "hono";
+import { Context, Hono } from "hono";
 
+import { StatusCode } from '../constants/status-code';
+import { authMiddleware } from '../middleware/auth';
 
 export const postRouter = new Hono<{
   Bindings: {
@@ -9,26 +11,216 @@ export const postRouter = new Hono<{
   }
 }>();
 
+postRouter.get('/', async (c: Context) => {
+  const prisma = new PrismaClient({ datasourceUrl: c.env?.DATABASE_URL }).$extends(withAccelerate());
+  try {
+    const posts = await prisma.post.findMany({
+      include: {
+        tags: {
+          include: {
+            tag: true,
+          },
+        },
+        author: {
+          select: {
+            id: true,
+            username: true,
+            email: true
+          }
+        },
+      },
+    });
 
-postRouter.get('/', (c) => {
-  return c.text("get all posts");
+    return c.json(posts, StatusCode.OK);
+  } catch (error) {
+    console.error(error);
+    return c.json({ error: 'Failed to get posts' }, StatusCode.INTERNAL_SERVER_ERROR);
+  } finally {
+    await prisma.$disconnect();
+  }
 });
 
-postRouter.get('/:id', (c) => {
-  const id = c.req.param('id')
-  console.log(id);
-  return c.text('get post by id')
-})
+postRouter.get('/:id', async (c: Context) => {
+  const prisma = new PrismaClient({ datasourceUrl: c.env?.DATABASE_URL }).$extends(withAccelerate());
+  try {
+    const postId = parseInt(c.req.param('id'));
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+      include: {
+        tags: {
+          include: {
+            tag: true,
+          },
+        },
+        author: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+          }
+        },
+      },
+    });
 
-postRouter.post("/", (c) => {
-  return c.text("create post here");
+    if (!post) {
+      return c.json({ error: 'Post not found' }, StatusCode.NOT_FOUND);
+    }
+
+    return c.json(post, StatusCode.OK);
+  } catch (error) {
+    console.error(error);
+    return c.json({ error: 'Failed to get post' }, StatusCode.INTERNAL_SERVER_ERROR);
+  } finally {
+    await prisma.$disconnect();
+  }
 });
 
-postRouter.put('/:id', (c) => {
+postRouter.post("/", authMiddleware, async (c: Context) => {
+  const prisma = new PrismaClient({ datasourceUrl: c.env?.DATABASE_URL }).$extends(withAccelerate());
+  try {
+    const body = await c.req.json();
+    const userId = c.get('user').id;
 
-  return c.text('PUT, post id')
-})
+    const newPost = await prisma.post.create({
+      data: {
+        title: body.title,
+        body: body.body,
+        authorId: userId,
+        tags: {
+          create: body.tags.map((tagName: string) => ({
+            tag: {
+              connectOrCreate: {
+                where: { name: tagName },
+                create: { name: tagName },
+              },
+            },
+          })),
+        },
+      },
+      include: {
+        tags: {
+          include: {
+            tag: true,
+          },
+        },
+      },
+    });
 
-postRouter.delete('/:id', (c) => {
-  return c.text('delete post by id')
-})
+    return c.json(newPost, StatusCode.CREATED);
+  } catch (error) {
+    console.error(error);
+    return c.json({ error: 'Failed to create post' }, StatusCode.INTERNAL_SERVER_ERROR);
+  } finally {
+    await prisma.$disconnect();
+  }
+});
+
+postRouter.put('/:id', authMiddleware, async (c: Context) => {
+  const prisma = new PrismaClient({ datasourceUrl: c.env?.DATABASE_URL }).$extends(withAccelerate());
+  try {
+    const postId = parseInt(c.req.param('id'));
+    const body = await c.req.json();
+    const userId = c.get('user').id;
+
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+      include: { author: true },
+    });
+
+    if (!post) {
+      return c.json({ error: 'Post not found' }, StatusCode.NOT_FOUND);
+    }
+
+    if (post.authorId !== userId) {
+      return c.json({ error: 'Unauthorized' }, StatusCode.UNAUTHORIZED);
+    }
+
+    await prisma.postTag.deleteMany({
+      where: { postId },
+    });
+
+    const tags = await Promise.all(
+      body.tags.map(async (tagName: string) => {
+        return await prisma.tag.upsert({
+          where: { name: tagName },
+          update: {},
+          create: { name: tagName },
+        });
+      })
+    );
+
+    const postTags = tags.map((tag) => ({
+      postId,
+      tagId: tag.id,
+    }));
+
+    await prisma.postTag.createMany({
+      data: postTags,
+    });
+
+    const updatedPost = await prisma.post.update({
+      where: { id: postId },
+      data: {
+        title: body.title,
+        body: body.body,
+      },
+      include: {
+        tags: {
+          include: {
+            tag: true,
+          },
+        },
+        author: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    return c.json(updatedPost, StatusCode.OK);
+  } catch (error) {
+    console.error(error);
+    return c.json({ error: 'Failed to update post' }, StatusCode.INTERNAL_SERVER_ERROR);
+  } finally {
+    await prisma.$disconnect();
+  }
+});
+
+postRouter.delete('/:id', authMiddleware, async (c: Context) => {
+  const prisma = new PrismaClient({ datasourceUrl: c.env?.DATABASE_URL }).$extends(withAccelerate());
+  try {
+    const postId = parseInt(c.req.param('id'));
+    const userId = c.get('user').id;
+
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+      include: { author: true },
+    });
+
+    if (!post) {
+      return c.json({ error: 'Post not found' }, StatusCode.NOT_FOUND);
+    }
+
+    if (post.authorId !== userId) {
+      return c.json({ error: 'Unauthorized' }, StatusCode.UNAUTHORIZED);
+    }
+
+    await prisma.postTag.deleteMany({
+      where: { postId },
+    });
+
+    await prisma.post.delete({
+      where: { id: postId },
+    });
+
+    return c.json({ message: 'Post deleted successfully' }, StatusCode.OK);
+  } catch (error) {
+    console.error(error);
+    return c.json({ error: 'Failed to delete post' }, StatusCode.INTERNAL_SERVER_ERROR);
+  } finally {
+    await prisma.$disconnect();
+  }
+});

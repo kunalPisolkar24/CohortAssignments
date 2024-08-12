@@ -1,4 +1,4 @@
-import { Hono, Next } from "hono";
+import { Next } from "hono";
 import { verify } from "hono/jwt";
 import { StatusCode } from '../constants/status-code';
 
