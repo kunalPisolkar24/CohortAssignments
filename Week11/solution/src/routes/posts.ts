@@ -7,7 +7,8 @@ import { authMiddleware } from '../middleware/auth';
 
 export const postRouter = new Hono<{
   Bindings: {
-    DATABASE_URL: string;
+    DATABASE_URL: string,
+    JWT_SECRET: string,
   }
 }>();
 
