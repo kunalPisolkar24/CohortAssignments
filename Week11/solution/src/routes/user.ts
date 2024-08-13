@@ -5,6 +5,7 @@ import { sign } from "hono/jwt";
 
 import { StatusCode } from '../constants/status-code';
 import { authMiddleware } from '../middleware/auth';
+import { signupSchema, signinSchema, userIdSchema } from '../validations/validations';
 
 export const userRouter = new Hono<{
   Bindings: {
@@ -18,8 +19,13 @@ userRouter.post('/signup', async (c) => {
   try {
     const body = await c.req.json();
 
+    const parsedBody = signupSchema.safeParse(body);
+    if (!parsedBody.success) {
+      return c.json({ error: parsedBody.error.errors }, StatusCode.BAD_REQUEST);
+    }
+
     const encoder = new TextEncoder();
-    const data = encoder.encode(body.password);
+    const data = encoder.encode(parsedBody.data.password);
     const hash = await crypto.subtle.digest('SHA-256', data);
 
     const passwordHashHex = Array.from(new Uint8Array(hash))
@@ -28,9 +34,9 @@ userRouter.post('/signup', async (c) => {
 
     const newUser = await prisma.user.create({
       data: {
-        email: body.email,
+        email: parsedBody.data.email,
         password: passwordHashHex,
-        username: body.username,
+        username: parsedBody.data.username,
       },
     });
 
@@ -50,8 +56,13 @@ userRouter.post('/signin', async (c) => {
   try {
     const body = await c.req.json();
 
+    const parsedBody = signinSchema.safeParse(body);
+    if (!parsedBody.success) {
+      return c.json({ error: parsedBody.error.errors }, StatusCode.BAD_REQUEST);
+    }
+
     const encoder = new TextEncoder();
-    const data = encoder.encode(body.password);
+    const data = encoder.encode(parsedBody.data.password);
     const hash = await crypto.subtle.digest('SHA-256', data);
 
     const passwordHashHex = Array.from(new Uint8Array(hash))
@@ -59,7 +70,7 @@ userRouter.post('/signin', async (c) => {
       .join('');
 
     const user = await prisma.user.findUnique({
-      where: { email: body.email },
+      where: { email: parsedBody.data.email },
     });
 
     if (!user || user.password !== passwordHashHex) {
@@ -83,8 +94,14 @@ userRouter.get('/users/:id', async (c) => {
   const prisma = new PrismaClient({ datasourceUrl: c.env?.DATABASE_URL }).$extends(withAccelerate());
   try {
     const userId = parseInt(c.req.param('id'));
+
+    const parsedParams = userIdSchema.safeParse({ id: userId });
+    if (!parsedParams.success) {
+      return c.json({ error: parsedParams.error.errors }, StatusCode.BAD_REQUEST);
+    }
+
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: parsedParams.data.id },
       select: { email: true, username: true },
     });
 
@@ -116,4 +133,3 @@ userRouter.get('/users', async (c) => {
     await prisma.$disconnect();
   }
 });
-

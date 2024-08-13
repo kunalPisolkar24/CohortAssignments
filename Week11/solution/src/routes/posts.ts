@@ -4,6 +4,7 @@ import { Context, Hono } from "hono";
 
 import { StatusCode } from '../constants/status-code';
 import { authMiddleware } from '../middleware/auth';
+import { createPostSchema, updatePostSchema, postIdSchema } from '../validations/validations';
 
 export const postRouter = new Hono<{
   Bindings: {
@@ -45,8 +46,14 @@ postRouter.get('/:id', async (c: Context) => {
   const prisma = new PrismaClient({ datasourceUrl: c.env?.DATABASE_URL }).$extends(withAccelerate());
   try {
     const postId = parseInt(c.req.param('id'));
+
+    const parsedParams = postIdSchema.safeParse({ id: postId });
+    if (!parsedParams.success) {
+      return c.json({ error: parsedParams.error.errors }, StatusCode.BAD_REQUEST);
+    }
+
     const post = await prisma.post.findUnique({
-      where: { id: postId },
+      where: { id: parsedParams.data.id },
       include: {
         tags: {
           include: {
@@ -80,15 +87,21 @@ postRouter.post("/", authMiddleware, async (c: Context) => {
   const prisma = new PrismaClient({ datasourceUrl: c.env?.DATABASE_URL }).$extends(withAccelerate());
   try {
     const body = await c.req.json();
+
+    const parsedBody = createPostSchema.safeParse(body);
+    if (!parsedBody.success) {
+      return c.json({ error: parsedBody.error.errors }, StatusCode.BAD_REQUEST);
+    }
+
     const userId = c.get('user').id;
 
     const newPost = await prisma.post.create({
       data: {
-        title: body.title,
-        body: body.body,
+        title: parsedBody.data.title,
+        body: parsedBody.data.body,
         authorId: userId,
         tags: {
-          create: body.tags.map((tagName: string) => ({
+          create: parsedBody.data.tags.map((tagName: string) => ({
             tag: {
               connectOrCreate: {
                 where: { name: tagName },
@@ -121,10 +134,21 @@ postRouter.put('/:id', authMiddleware, async (c: Context) => {
   try {
     const postId = parseInt(c.req.param('id'));
     const body = await c.req.json();
+
+    const parsedParams = postIdSchema.safeParse({ id: postId });
+    if (!parsedParams.success) {
+      return c.json({ error: parsedParams.error.errors }, StatusCode.BAD_REQUEST);
+    }
+
+    const parsedBody = updatePostSchema.safeParse(body);
+    if (!parsedBody.success) {
+      return c.json({ error: parsedBody.error.errors }, StatusCode.BAD_REQUEST);
+    }
+
     const userId = c.get('user').id;
 
     const post = await prisma.post.findUnique({
-      where: { id: postId },
+      where: { id: parsedParams.data.id },
       include: { author: true },
     });
 
@@ -141,7 +165,7 @@ postRouter.put('/:id', authMiddleware, async (c: Context) => {
     });
 
     const tags = await Promise.all(
-      body.tags.map(async (tagName: string) => {
+      parsedBody.data.tags.map(async (tagName: string) => {
         return await prisma.tag.upsert({
           where: { name: tagName },
           update: {},
@@ -162,8 +186,8 @@ postRouter.put('/:id', authMiddleware, async (c: Context) => {
     const updatedPost = await prisma.post.update({
       where: { id: postId },
       data: {
-        title: body.title,
-        body: body.body,
+        title: parsedBody.data.title,
+        body: parsedBody.data.body,
       },
       include: {
         tags: {
@@ -194,10 +218,16 @@ postRouter.delete('/:id', authMiddleware, async (c: Context) => {
   const prisma = new PrismaClient({ datasourceUrl: c.env?.DATABASE_URL }).$extends(withAccelerate());
   try {
     const postId = parseInt(c.req.param('id'));
+
+    const parsedParams = postIdSchema.safeParse({ id: postId });
+    if (!parsedParams.success) {
+      return c.json({ error: parsedParams.error.errors }, StatusCode.BAD_REQUEST);
+    }
+
     const userId = c.get('user').id;
 
     const post = await prisma.post.findUnique({
-      where: { id: postId },
+      where: { id: parsedParams.data.id },
       include: { author: true },
     });
 
