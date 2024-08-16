@@ -33,3 +33,19 @@ export const getSurveyByIdSchema = z.object({
     }).regex(/^\d+$/, "Survey ID must be a number"),
   }),
 });
+
+export const updateSurveySchema = z.object({
+  title: z.string().min(1, "Title cannot be empty").max(100, "Title must be 100 characters or less").optional(),
+  questions: z.array(
+    z.object({
+      id: z.number().int().positive().optional(),
+      text: z.string().min(1, "Question text cannot be empty").max(500, "Question text must be 500 characters or less"),
+      options: z.array(
+        z.object({
+          id: z.number().int().positive().optional(),
+          text: z.string().min(1, "Option text cannot be empty").max(200, "Option text must be 200 characters or less"),
+        })
+      ).min(2, "At least two options are required").max(10, "Maximum of 10 options allowed"),
+    })
+  ).min(1, "At least one question is required").max(50, "Maximum of 50 questions allowed"),
+});

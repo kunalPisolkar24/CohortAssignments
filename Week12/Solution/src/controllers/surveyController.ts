@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { createSurveySchema } from "../validations/surveyValidations";
 import { getSurveyByIdSchema } from "../validations/surveyValidations";
+import { updateSurveySchema } from "../validations/surveyValidations";
 
 const prisma = new PrismaClient();
 
@@ -90,8 +91,61 @@ export const getSurveyById = async (req: Request, res: Response) => {
   }
 };
 
-export const updateSurvey = (req: Request, res: Response) => {
-  res.status(200).json({ message: "This route is for updating a specific survey by ID." });
+export const updateSurvey = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const parsedBody = updateSurveySchema.parse(req.body);
+
+    const existingSurvey = await prisma.survey.findUnique({
+      where: { id: Number(id) },
+      include: { questions: { include: { options: true } } },
+    });
+
+    if (!existingSurvey) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({ error: "Survey not found" });
+    }
+
+    const updatedSurvey = await prisma.$transaction(async (prisma) => {
+      await prisma.option.deleteMany({
+        where: { question: { surveyId: Number(id) } },
+      });
+      await prisma.question.deleteMany({
+        where: { surveyId: Number(id) },
+      });
+
+      return prisma.survey.update({
+        where: { id: Number(id) },
+        data: {
+          title: parsedBody.title,
+          questions: {
+            create: parsedBody.questions.map((question) => ({
+              text: question.text,
+              options: {
+                create: question.options.map((option) => ({
+                  text: option.text,
+                })),
+              },
+            })),
+          },
+        },
+        include: {
+          questions: {
+            include: {
+              options: true,
+            },
+          },
+        },
+      });
+    });
+    res.status(STATUS_CODES.OK).json(updatedSurvey);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(STATUS_CODES.BAD_REQUEST).json({ error: error.errors });
+    } else {
+      console.error("Error updating survey:", error);
+      res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ error: "Failed to update survey" });
+    }
+  }
 };
 
 export const deleteSurvey = (req: Request, res: Response) => {
