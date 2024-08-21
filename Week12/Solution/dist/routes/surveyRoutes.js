@@ -11,6 +11,4 @@ router.get("/", surveyController_1.getAllSurveys);
 router.get("/:id", surveyController_1.getSurveyById);
 router.put("/:id", surveyController_1.updateSurvey);
 router.delete("/:id", surveyController_1.deleteSurvey);
-router.post("/:id/vote", surveyController_1.voteInSurvey);
-router.get("/:id/results", surveyController_1.getSurveyResults);
 exports.default = router;

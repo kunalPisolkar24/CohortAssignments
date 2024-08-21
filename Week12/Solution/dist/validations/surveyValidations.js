@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateSurveySchema = exports.getSurveyByIdSchema = exports.createSurveySchema = void 0;
+exports.updateSurveySchema = exports.deleteSurveySchema = exports.getSurveyByIdSchema = exports.createSurveySchema = void 0;
 const zod_1 = require("zod");
 exports.createSurveySchema = zod_1.z.object({
     title: zod_1.z.string({
@@ -21,6 +21,14 @@ exports.createSurveySchema = zod_1.z.object({
     })).min(1, "At least one question is required").max(50, "Maximum of 50 questions allowed"),
 });
 exports.getSurveyByIdSchema = zod_1.z.object({
+    params: zod_1.z.object({
+        id: zod_1.z.string({
+            required_error: "Survey ID is required",
+            invalid_type_error: "Survey ID must be a string",
+        }).regex(/^\d+$/, "Survey ID must be a number"),
+    }),
+});
+exports.deleteSurveySchema = zod_1.z.object({
     params: zod_1.z.object({
         id: zod_1.z.string({
             required_error: "Survey ID is required",

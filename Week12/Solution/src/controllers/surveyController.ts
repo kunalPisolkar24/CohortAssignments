@@ -6,6 +6,7 @@ import { z } from "zod";
 import { createSurveySchema } from "../validations/surveyValidations";
 import { getSurveyByIdSchema } from "../validations/surveyValidations";
 import { updateSurveySchema } from "../validations/surveyValidations";
+import { deleteSurveySchema } from "../validations/surveyValidations";
 
 const prisma = new PrismaClient();
 
@@ -148,14 +149,40 @@ export const updateSurvey = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteSurvey = (req: Request, res: Response) => {
-  res.status(200).json({ message: "This route is for deleting a specific survey by ID." });
-};
+export const deleteSurvey = async (req: Request, res: Response) => {
+  try {
+    const { params } = deleteSurveySchema.parse(req);
+    const surveyId = parseInt(params.id, 10);
 
-export const voteInSurvey = (req: Request, res: Response) => {
-  res.status(200).json({ message: "This route is for voting in a survey." });
-};
+    const existingSurvey = await prisma.survey.findUnique({
+      where: { id: surveyId },
+    });
 
-export const getSurveyResults = (req: Request, res: Response) => {
-  res.status(200).json({ message: "This route is for fetching the results of a survey." });
+    if (!existingSurvey) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({ error: "Survey not found" });
+    }
+
+    await prisma.$transaction(async (prisma) => {
+      await prisma.option.deleteMany({
+        where: { question: { surveyId: surveyId } },
+      });
+
+      await prisma.question.deleteMany({
+        where: { surveyId: surveyId },
+      });
+
+      await prisma.survey.delete({
+        where: { id: surveyId },
+      });
+    });
+
+    res.status(STATUS_CODES.OK).json({ message: "Survey and all associated data deleted successfully" });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(STATUS_CODES.BAD_REQUEST).json({ error: error.errors });
+    } else {
+      console.error("Error deleting survey:", error);
+      res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ error: "Failed to delete survey" });
+    }
+  }
 };

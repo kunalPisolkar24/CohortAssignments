@@ -34,6 +34,16 @@ export const getSurveyByIdSchema = z.object({
   }),
 });
 
+
+export const deleteSurveySchema = z.object({
+  params: z.object({
+    id: z.string({
+      required_error: "Survey ID is required",
+      invalid_type_error: "Survey ID must be a string",
+    }).regex(/^\d+$/, "Survey ID must be a number"),
+  }),
+});
+
 export const updateSurveySchema = z.object({
   title: z.string().min(1, "Title cannot be empty").max(100, "Title must be 100 characters or less").optional(),
   questions: z.array(
@@ -49,3 +59,4 @@ export const updateSurveySchema = z.object({
     })
   ).min(1, "At least one question is required").max(50, "Maximum of 50 questions allowed"),
 });
+

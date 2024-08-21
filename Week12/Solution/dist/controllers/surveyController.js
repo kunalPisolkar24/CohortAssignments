@@ -9,13 +9,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSurveyResults = exports.voteInSurvey = exports.deleteSurvey = exports.updateSurvey = exports.getSurveyById = exports.getAllSurveys = exports.createSurvey = void 0;
+exports.deleteSurvey = exports.updateSurvey = exports.getSurveyById = exports.getAllSurveys = exports.createSurvey = void 0;
 const statusCodes_1 = require("../constants/statusCodes");
 const client_1 = require("@prisma/client");
 const zod_1 = require("zod");
 const surveyValidations_1 = require("../validations/surveyValidations");
 const surveyValidations_2 = require("../validations/surveyValidations");
 const surveyValidations_3 = require("../validations/surveyValidations");
+const surveyValidations_4 = require("../validations/surveyValidations");
 const prisma = new client_1.PrismaClient();
 const createSurvey = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -150,15 +151,37 @@ const updateSurvey = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.updateSurvey = updateSurvey;
-const deleteSurvey = (req, res) => {
-    res.status(200).json({ message: "This route is for deleting a specific survey by ID." });
-};
+const deleteSurvey = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { params } = surveyValidations_4.deleteSurveySchema.parse(req);
+        const surveyId = parseInt(params.id, 10);
+        const existingSurvey = yield prisma.survey.findUnique({
+            where: { id: surveyId },
+        });
+        if (!existingSurvey) {
+            return res.status(statusCodes_1.STATUS_CODES.NOT_FOUND).json({ error: "Survey not found" });
+        }
+        yield prisma.$transaction((prisma) => __awaiter(void 0, void 0, void 0, function* () {
+            yield prisma.option.deleteMany({
+                where: { question: { surveyId: surveyId } },
+            });
+            yield prisma.question.deleteMany({
+                where: { surveyId: surveyId },
+            });
+            yield prisma.survey.delete({
+                where: { id: surveyId },
+            });
+        }));
+        res.status(statusCodes_1.STATUS_CODES.OK).json({ message: "Survey and all associated data deleted successfully" });
+    }
+    catch (error) {
+        if (error instanceof zod_1.z.ZodError) {
+            res.status(statusCodes_1.STATUS_CODES.BAD_REQUEST).json({ error: error.errors });
+        }
+        else {
+            console.error("Error deleting survey:", error);
+            res.status(statusCodes_1.STATUS_CODES.INTERNAL_SERVER_ERROR).json({ error: "Failed to delete survey" });
+        }
+    }
+});
 exports.deleteSurvey = deleteSurvey;
-const voteInSurvey = (req, res) => {
-    res.status(200).json({ message: "This route is for voting in a survey." });
-};
-exports.voteInSurvey = voteInSurvey;
-const getSurveyResults = (req, res) => {
-    res.status(200).json({ message: "This route is for fetching the results of a survey." });
-};
-exports.getSurveyResults = getSurveyResults;
