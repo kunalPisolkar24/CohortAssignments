@@ -1,15 +1,84 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import signupImage from "../../assets/signupImage.jpg";
-import SigninCard from './SigninCard';
+import { useToast } from "@/hooks/use-toast";
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { signinSchema, SigninSchemaType } from '@kunalpisolkar24/blogapp-common';
 
-import { useState, useEffect } from 'react';
+
+const SigninCard: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    try {
+      const parsedInput = signinSchema.safeParse({ email, password });
+
+      if (!parsedInput.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: parsedInput.error.errors[0].message,
+        });
+        return;
+      }
+        const validatedInput: SigninSchemaType = parsedInput.data
+
+      const response = await axios.post('https://blogapp.kpisolkar24.workers.dev/api/signin', validatedInput);
+
+      localStorage.setItem('jwt', response.data.jwt);
+      toast({
+        title: "Success",
+        description: "Successfully signed in",
+      });
+      navigate('/');
+
+    } catch (error:any) {
+      toast({
+        variant: 'destructive',
+        title: "Error",
+        description: "Invalid credentials",
+      });
+      console.error("Sign-in failed:", error);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center h-screen">
+      <div className="bg-background p-8 rounded-lg shadow-lg w-full max-w-md">
+        <div className="text-center space-y-4">
+          <h1 className="text-3xl font-bold">Sign In</h1>
+          <p className="text-muted-foreground">Login to your Account</p>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4 mt-8">
+          <div>
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" type="email" placeholder="Enter your email" value={email} onChange={(e: React.ChangeEvent<HTMLInputElement>)=> setEmail(e.target.value)} />
+          </div>
+          <div>
+            <Label htmlFor="password">Password</Label>
+            <Input id="password" type="password" placeholder="Enter your password" value={password} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)} />
+          </div>
+          <Button type="submit" className="w-full">
+            Sign In
+          </Button>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+
 
 const useIsLargeScreen = () => {
-  const [isLarge, setIsLarge] = useState(window.innerWidth >= 1024); // 'lg' breakpoint in Tailwind
+  const [isLarge, setIsLarge] = useState(window.innerWidth >= 1024);
 
   useEffect(() => {
     const handleResize = () => {
@@ -25,12 +94,56 @@ const useIsLargeScreen = () => {
 
 const Signin: React.FC = () => {
   const isLargeScreen = useIsLargeScreen();
+  const { toast } = useToast()
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+      try {
+          const parsedInput = signinSchema.safeParse({ email, password });
+
+          if (!parsedInput.success) {
+              toast({
+                  variant: 'destructive',
+                  title: 'Error',
+                  description: parsedInput.error.errors[0].message,
+              });
+              return;
+          }
+          const validatedInput: SigninSchemaType = parsedInput.data
+
+
+          const response = await axios.post('https://blogapp.kpisolkar24.workers.dev/api/signin', validatedInput);
+          localStorage.setItem('jwt', response.data.jwt);
+
+          toast({
+              title: "Success",
+              description: "Successfully signed in",
+
+          })
+          navigate('/');
+
+      } catch (error:any) {
+          toast({
+              variant: 'destructive',
+              title: "Error",
+              description: "Invalid credentials",
+
+          })
+          console.error("Sign-in failed:", error);
+      }
+  };
+
 
   if (!isLargeScreen) {
     return <SigninCard />;
   }
 
   return (
+
     <main className="flex min-h-screen items-center justify-center py-6">
       <section className="container px-4 md:px-6">
         <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
@@ -44,14 +157,14 @@ const Signin: React.FC = () => {
               </p>
             </div>
             <div className="w-full max-w-sm space-y-2">
-              <form className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="Enter your email" required />
+                  <Input id="email" type="email" placeholder="Enter your email" required value={email} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
-                  <Input id="password" type="password" placeholder="Enter your Password" required />
+                  <Input id="password" type="password" placeholder="Enter your Password" required value={password} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)} />
                 </div>
                 <Button type="submit" className="w-full">
                   Sign In
