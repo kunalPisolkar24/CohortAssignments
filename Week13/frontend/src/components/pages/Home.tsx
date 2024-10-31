@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StickyNavbar from './StickyNavbar';
+import BlogList from './BlogList';
+
 const Home: React.FC = () => {
   const navigate = useNavigate();
 
@@ -16,6 +18,7 @@ const Home: React.FC = () => {
       <StickyNavbar />
       <h1>Home</h1>
       <p>Welcome to the protected home page!</p>
+      <BlogList /> 
     </div>
   );
 };

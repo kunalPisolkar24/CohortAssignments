@@ -6,7 +6,7 @@ import Signin from '@/components/pages/Signin';
 import Home from "@/components/pages/Home";
 export default function App() {
   return (
-    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <Router>
         <Routes>
           <Route path="/signup" element={<Signup />} />

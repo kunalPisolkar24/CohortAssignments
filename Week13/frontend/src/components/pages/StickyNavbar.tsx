@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback} from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,17 +8,44 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, Settings, HelpCircle, LogOut, UserRound, Plus } from 'lucide-react';
+import { User, Settings, HelpCircle, LogOut, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
+import axios from 'axios';
 
 const StickyNavbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [userInitial, setUserInitial] = useState("U");
 
   const handleLogout = () => {
     localStorage.removeItem('jwt');  
       window.location.href = '/signin';
   };
+
+ useEffect(() => {
+    const fetchUserInitial = async () => {
+      const jwt = localStorage.getItem('jwt');
+      if (jwt) {
+        try {
+          const decodedToken = JSON.parse(atob(jwt.split('.')[1])); 
+          const userId = decodedToken.id;
+
+          const response = await axios.get(`https://blogapp.kpisolkar24.workers.dev/api/users/${userId}`);
+          const username = response.data.username;
+          const initial = username ? username.charAt(0).toUpperCase() : "U"; 
+          setUserInitial(initial);
+
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+          if (axios.isAxiosError(error) && error.response?.status === 401) { 
+                localStorage.removeItem('jwt');
+                window.location.href = '/signin'; 
+          }
+        }
+      }
+    };
+
+    fetchUserInitial(); 
+  }, []);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background shadow">
@@ -27,18 +54,17 @@ const StickyNavbar: React.FC = () => {
           <div className="flex-shrink-0 flex items-center">
 
           <Link to="/" className="text-xl font-bold text-foreground"> 
-
               <span className="hidden sm:inline">blogApp</span>
               <span className="sm:hidden">bA</span>
             </Link>
           </div>
+
           <div className="flex items-center">
             <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full ">
+                <Button variant="ghost" className="h-8 w-8 rounded-full ">
                   <Avatar className="h-8 w-8">
-                    <Avatar> <UserRound className="ml-[4px] mt-[3px] h-6 w-6" /></Avatar>                    
-                  <AvatarFallback>U</AvatarFallback>
+                  <AvatarFallback> {userInitial}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
