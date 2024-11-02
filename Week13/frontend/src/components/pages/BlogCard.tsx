@@ -26,7 +26,7 @@ const BlogCard: React.FC<BlogCardProps> = ({ imageUrl, title, snippet, author, t
             <img  // Use a standard img tag
               src={imageUrl}
               alt={title}
-              className="w-full h-48 md:h-full object-cover"
+              className="w-full h-auto md:h-full object-cover"
             />
           </div>
           <div className="flex flex-col justify-between p-6 md:w-3/5 md:order-1">

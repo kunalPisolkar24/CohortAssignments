@@ -4,6 +4,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import Signup from '@/components/pages/Signup'; 
 import Signin from '@/components/pages/Signin'; 
 import Home from "@/components/pages/Home";
+import ViewBlogPage from '@/components/pages/ViewBlogPage';
+
 export default function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
@@ -13,6 +15,7 @@ export default function App() {
           <Route path="/signin" element={<Signin />} />
           <Route path="/" element={<Home />} /> 
           <Route path="*" element={<Navigate to="/signin" />} />
+          <Route path="/blog" element={<ViewBlogPage />} />
         </Routes>
       </Router>
       <Toaster/>      
