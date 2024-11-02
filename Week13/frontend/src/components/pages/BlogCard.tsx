@@ -1,9 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Avatar, AvatarFallback} from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 
 interface BlogCardProps {
   imageUrl: string;
@@ -15,15 +14,16 @@ interface BlogCardProps {
   };
   tags: string[];
   slug: string;
+  id: number; 
 }
 
-const BlogCard: React.FC<BlogCardProps> = ({ imageUrl, title, snippet, author, tags, slug }) => {
+const BlogCard: React.FC<BlogCardProps> = ({ imageUrl, title, snippet, author, tags, slug, id }) => {
   return (
-    <Link to={`/blog/${slug}`} className="block"> {/* Use Link from react-router-dom */}
+    <Link to={`/blog/${id}`} className="block"> 
       <Card className="overflow-hidden transition-all hover:bg-accent hover:shadow-lg">
         <div className="flex flex-col md:flex-row">
           <div className="md:w-2/5 md:order-2">
-            <img  // Use a standard img tag
+            <img
               src={imageUrl}
               alt={title}
               className="w-full h-auto md:h-full object-cover"
@@ -35,7 +35,7 @@ const BlogCard: React.FC<BlogCardProps> = ({ imageUrl, title, snippet, author, t
               <p className="text-muted-foreground mb-4">{snippet}</p>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="flex items-center space-x-4  mb-4 mb-2 mt-5">
+              <div className="flex items-center space-x-4 mb-4 mb-2 mt-5">
                 <Avatar>
                   <AvatarFallback>{author.name.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
@@ -58,6 +58,5 @@ const BlogCard: React.FC<BlogCardProps> = ({ imageUrl, title, snippet, author, t
     </Link>
   );
 };
-
 
 export default BlogCard;

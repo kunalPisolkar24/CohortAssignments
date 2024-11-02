@@ -16,8 +16,6 @@ const Home: React.FC = () => {
   return (
     <div>
       <StickyNavbar />
-      <h1>Home</h1>
-      <p>Welcome to the protected home page!</p>
       <BlogList /> 
     </div>
   );

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import BlogCard from './BlogCard'; // Import your BlogCard component
+import BlogCard from './BlogCard'; 
 import Image1 from "../../assets/blogImages/one.jpg";
 import Image2 from "../../assets/blogImages/two.jpg";
 import Image3 from "../../assets/blogImages/three.jpg";
@@ -41,6 +41,7 @@ interface FormattedBlogPost {
   };
   tags: string[];
   slug: string;
+  id: number; // Add the blog ID
 }
 
 function shuffleArray(array: any[]) {
@@ -62,13 +63,14 @@ const BlogList: React.FC = () => {
         const data = response.data;
         const formattedBlogs: FormattedBlogPost[] = data.map(post => ({
           title: post.title,
-          snippet: post.body.substring(0, 100) + '...', // Truncate the body to create a snippet
+          snippet: post.body.substring(0, 200) + '...',
           author: {
             name: post.author.username,
-            avatarUrl: `https://i.pravatar.cc/150?img=${post.authorId}`, // Use a placeholder avatar URL
+            avatarUrl: `https://i.pravatar.cc/150?img=${post.authorId}`,
           },
           tags: post.tags.map(tag => tag.tag.name),
-          slug: `post-${post.id}`, // Create a slug based on the post ID
+          slug: `post-${post.id}`,
+          id: post.id, // Include the blog ID
         }));
         setBlogPosts(formattedBlogs);
       } catch (error) {
