@@ -163,17 +163,18 @@ const BlogList: React.FC<BlogListProps> = ({ filterTag }) => {
               />
             )}
           </PaginationItem>
-          {Array.from({ length: totalPages }, (_, i) => (
-            <PaginationItem key={i}>
-              <PaginationLink
-                href="#"
-                onClick={() => handlePageChange(i + 1)}
-                isActive={currentPage === i + 1}
-              >
-                {i + 1}
-              </PaginationLink>
-            </PaginationItem>
-          ))}
+
+{Array.from({ length: totalPages }, (_, i) => (
+  <PaginationItem key={i}>
+    <PaginationLink
+      href="#"
+      onClick={() => handlePageChange(i + 1)}
+      isActive={currentPage === i + 1} 
+    >
+      {i + 1}
+    </PaginationLink>
+  </PaginationItem>
+))}
           <PaginationItem>
             {currentPage < totalPages && (
               <PaginationNext

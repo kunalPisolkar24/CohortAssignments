@@ -7,16 +7,19 @@ import { useToast } from "@/hooks/use-toast";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { signinSchema, SigninSchemaType } from '@kunalpisolkar24/blogapp-common';
+import LoadingSpinner from "./LoadingSpinner";
 
 
 const SigninCard: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false); // Add loading state
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true); // Set loading to true
 
     try {
       const parsedInput = signinSchema.safeParse({ email, password });
@@ -27,9 +30,11 @@ const SigninCard: React.FC = () => {
           title: 'Error',
           description: parsedInput.error.errors[0].message,
         });
+        setLoading(false); // Set loading to false
         return;
       }
-        const validatedInput: SigninSchemaType = parsedInput.data
+
+      const validatedInput: SigninSchemaType = parsedInput.data;
 
       const response = await axios.post('https://blogapp.kpisolkar24.workers.dev/api/signin', validatedInput);
 
@@ -40,15 +45,21 @@ const SigninCard: React.FC = () => {
       });
       navigate('/');
 
-    } catch (error:any) {
+    } catch (error: any) {
       toast({
         variant: 'destructive',
         title: "Error",
         description: "Invalid credentials",
       });
       console.error("Sign-in failed:", error);
+    } finally {
+      setLoading(false); // Set loading to false
     }
   };
+
+  if (loading) {
+    return <LoadingSpinner />; // Render spinner if loading
+  }
 
   return (
     <div className="flex items-center justify-center h-screen">
@@ -60,7 +71,7 @@ const SigninCard: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-4 mt-8">
           <div>
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="Enter your email" value={email} onChange={(e: React.ChangeEvent<HTMLInputElement>)=> setEmail(e.target.value)} />
+            <Input id="email" type="email" placeholder="Enter your email" value={email} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)} />
           </div>
           <div>
             <Label htmlFor="password">Password</Label>
@@ -74,7 +85,6 @@ const SigninCard: React.FC = () => {
     </div>
   )
 }
-
 
 
 const useIsLargeScreen = () => {
@@ -94,56 +104,61 @@ const useIsLargeScreen = () => {
 
 const Signin: React.FC = () => {
   const isLargeScreen = useIsLargeScreen();
-  const { toast } = useToast()
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false); // Add loading state
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true); // Set loading to true
 
-      try {
-          const parsedInput = signinSchema.safeParse({ email, password });
+    try {
+      const parsedInput = signinSchema.safeParse({ email, password });
 
-          if (!parsedInput.success) {
-              toast({
-                  variant: 'destructive',
-                  title: 'Error',
-                  description: parsedInput.error.errors[0].message,
-              });
-              return;
-          }
-          const validatedInput: SigninSchemaType = parsedInput.data
-
-
-          const response = await axios.post('https://blogapp.kpisolkar24.workers.dev/api/signin', validatedInput);
-          localStorage.setItem('jwt', response.data.jwt);
-
-          toast({
-              title: "Success",
-              description: "Successfully signed in",
-
-          })
-          navigate('/');
-
-      } catch (error:any) {
-          toast({
-              variant: 'destructive',
-              title: "Error",
-              description: "Invalid credentials",
-
-          })
-          console.error("Sign-in failed:", error);
+      if (!parsedInput.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: parsedInput.error.errors[0].message,
+        });
+        setLoading(false); // Set loading to false
+        return;
       }
+
+      const validatedInput: SigninSchemaType = parsedInput.data;
+
+      const response = await axios.post('https://blogapp.kpisolkar24.workers.dev/api/signin', validatedInput);
+      localStorage.setItem('jwt', response.data.jwt);
+
+      toast({
+        title: "Success",
+        description: "Successfully signed in",
+      });
+      navigate('/');
+
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: "Error",
+        description: "Invalid credentials",
+      });
+      console.error("Sign-in failed:", error);
+    } finally {
+      setLoading(false); // Set loading to false
+    }
   };
 
+  if (loading) {
+    return <LoadingSpinner />; // Render spinner if loading
+  }
 
   if (!isLargeScreen) {
     return <SigninCard />;
   }
 
   return (
-
     <main className="flex min-h-screen items-center justify-center py-6">
       <section className="container px-4 md:px-6">
         <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">

@@ -7,16 +7,19 @@ import { useToast } from "@/hooks/use-toast";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { signupSchema, SignupSchemaType } from '@kunalpisolkar24/blogapp-common'; // Adjust the import based on your actual schema path
+import LoadingSpinner from "./LoadingSpinner";
 
 const SignupCard: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
 
     try {
       const parsedInput = signupSchema.safeParse({ email, password, username });
@@ -27,6 +30,7 @@ const SignupCard: React.FC = () => {
           title: 'Error',
           description: parsedInput.error.errors[0].message,
         });
+        setIsLoading(false);
         return;
       }
 
@@ -47,6 +51,8 @@ const SignupCard: React.FC = () => {
         description: "Signup failed",
       });
       console.error("Signup failed:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -70,14 +76,15 @@ const SignupCard: React.FC = () => {
             <Label htmlFor="username">Username</Label>
             <Input id="username" placeholder="Enter your username" value={username} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)} />
           </div>
-          <Button type="submit" className="w-full">
-            Sign Up
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? <LoadingSpinner /> : 'Sign Up'}
           </Button>
         </form>
       </div>
     </div>
   );
 };
+
 
 const useIsLargeScreen = () => {
   const [isLarge, setIsLarge] = useState(window.innerWidth >= 1024);
@@ -99,11 +106,13 @@ const Signup: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
 
     try {
       const parsedInput = signupSchema.safeParse({ email, password, username });
@@ -114,6 +123,7 @@ const Signup: React.FC = () => {
           title: 'Error',
           description: parsedInput.error.errors[0].message,
         });
+        setIsLoading(false);
         return;
       }
 
@@ -134,6 +144,8 @@ const Signup: React.FC = () => {
         description: "Signup failed",
       });
       console.error("Signup failed:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -168,8 +180,8 @@ const Signup: React.FC = () => {
                   <Label htmlFor="username">Username</Label>
                   <Input id="username" placeholder="Enter your Username" required value={username} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)} />
                 </div>
-                <Button type="submit" className="w-full">
-                  Sign Up
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? <LoadingSpinner /> : 'Sign Up'}
                 </Button>
               </form>
             </div>

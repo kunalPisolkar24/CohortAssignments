@@ -4,6 +4,8 @@ import StickyNavbar from './StickyNavbar';
 import BlogList from './BlogList';
 import SearchBar from './SearchBar';
 
+import ErrorBoundary from './ErrorBoundary';
+
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
@@ -22,8 +24,12 @@ const Home: React.FC = () => {
   return (
     <div>
       <StickyNavbar />
-      <SearchBar onTagSelect={handleTagSelect} />
-      <BlogList filterTag={selectedTag || ''} />
+      <ErrorBoundary>
+        <SearchBar onTagSelect={handleTagSelect} />
+      </ErrorBoundary>
+      <ErrorBoundary>
+        <BlogList filterTag={selectedTag || ''} />
+      </ErrorBoundary>
     </div>
   );
 };
